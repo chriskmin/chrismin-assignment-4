@@ -14,13 +14,11 @@ app = Flask(__name__)
 newsgroups = fetch_20newsgroups(subset='all')
 documents = newsgroups.data
 
-# Initialize TF-IDF Vectorizer with stopwords from NLTK
 stop_words = stopwords.words('english')
 vectorizer = TfidfVectorizer(stop_words=stop_words)
 X_tfidf = vectorizer.fit_transform(documents)
 
-# Apply TruncatedSVD (LSA) to reduce the dimensionality
-svd = TruncatedSVD(n_components=100)  # Reduce to 100 dimensions
+svd = TruncatedSVD(n_components=100)  
 X_reduced = svd.fit_transform(X_tfidf)
 
 
@@ -30,19 +28,15 @@ def search_engine(query):
     Input: query (str)
     Output: documents (list), similarities (list), indices (list)
     """
-    # Transform the query using the same TF-IDF vectorizer
     query_tfidf = vectorizer.transform([query])
-    
-    # Reduce the dimensionality of the query using the same SVD model
+
     query_reduced = svd.transform(query_tfidf)
     
-    # Compute cosine similarity between the query and all documents
     cosine_similarities = cosine_similarity(query_reduced, X_reduced).flatten()
     
-    # Get the top 5 most similar documents
-    top_indices = cosine_similarities.argsort()[-5:][::-1]  # Sort and get top 5 indices
-    top_similarities = cosine_similarities[top_indices]  # Get the similarity scores for the top 5
-    top_documents = [documents[i] for i in top_indices]  # Get the top 5 documents
+    top_indices = cosine_similarities.argsort()[-5:][::-1]  
+    top_similarities = cosine_similarities[top_indices]  
+    top_documents = [documents[i] for i in top_indices]  
     
     return top_documents, top_similarities.tolist(), top_indices.tolist()
 
